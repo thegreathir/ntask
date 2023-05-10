@@ -109,10 +109,12 @@ int main() {
   osmium::io::Reader reader{"west.osm.gz", osmium::osm_entity_bits::node |
                                                osmium::osm_entity_bits::way};
 
-  osmium::index::map::SparseMemArray<osmium::unsigned_object_id_type,
-                                     osmium::Location>
-      index;
-  auto location_handler = osmium::handler::NodeLocationsForWays{index};
+  using IndexType =
+      osmium::index::map::SparseMemArray<osmium::unsigned_object_id_type,
+                                         osmium::Location>;
+  IndexType index;
+  auto location_handler =
+      osmium::handler::NodeLocationsForWays<IndexType>{index};
 
   DangerousBendHandler dangerous_bend_handler{
       {"trunk", "primary", "secondary", "tertiary"}, 50, 135};
