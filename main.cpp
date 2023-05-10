@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <osmium/handler/node_locations_for_ways.hpp>
 #include <osmium/index/map/sparse_mem_array.hpp>
@@ -6,6 +7,7 @@
 #include <osmium/visitor.hpp>
 
 #include "dangerous_bend.hpp"
+#include "json.hpp"
 
 int main() {
   osmium::io::Reader reader{"west.osm.gz", osmium::osm_entity_bits::node |
@@ -24,10 +26,17 @@ int main() {
   osmium::apply(reader, location_handler, dangerous_bend_handler);
   reader.close();
 
-  for (const auto &node : dangerous_bend_handler.get_dangerous_bends()) {
-    std::cout << "https://www.openstreetmap.org/node/" << node.ref()
-              << std::endl;
+  auto result = nlohmann::json::array();
+  for (const auto& node : dangerous_bend_handler.get_dangerous_bends()) {
+    result.push_back(nlohmann::json{
+        {"location", {{"lat", node.lat()}, {"lon", node.lon()}}},
+        {"link",
+         "https://www.openstreetmap.org/node/" + std::to_string(node.ref())}});
   }
+
+  constexpr const char* RESULT_FILE_NAME = "result.json";
+  std::ofstream result_file{RESULT_FILE_NAME};
+  result_file << result.dump(2) << std::endl;
 
   return 0;
 }
