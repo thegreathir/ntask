@@ -16,22 +16,26 @@ void DangerousBendHandler::way(const osmium::Way &way) {
           [&way](const std::pair<std::string, std::string> &blacklisted_tag) {
             return way.tags().has_tag(blacklisted_tag.first.c_str(),
                                       blacklisted_tag.second.c_str());
-          }))
+          })) {
     return;
+  }
 
   const auto *highway_value = way.tags().get_value_by_key("highway");
-  if (!highway_value) return;
+  if (highway_value == nullptr) {
+    return;
+  }
   if (std::all_of(highway_tags.cbegin(), highway_tags.cend(),
                   [highway_value](const std::string &way_tag) {
                     return way_tag != highway_value;
-                  }))
+                  })) {
     return;
+  }
 
   add_dangerous_bend(way);
 }
 
-const std::vector<osmium::NodeRef> &DangerousBendHandler::get_dangerous_bends()
-    const noexcept {
+auto DangerousBendHandler::get_dangerous_bends() const noexcept
+    -> const std::vector<osmium::NodeRef> & {
   return dangerous_bends;
 }
 
@@ -47,8 +51,9 @@ void DangerousBendHandler::add_dangerous_bend(const osmium::Way &way) {
          --left_node_index) {
       if (osmium::geom::haversine::distance(nodes[left_node_index].location(),
                                             nodes[node_index].location()) >
-          distance_threshold)
+          distance_threshold) {
         break;
+      }
 
       left_node_indices.push_back(left_node_index);
     }
@@ -58,32 +63,35 @@ void DangerousBendHandler::add_dangerous_bend(const osmium::Way &way) {
          ++right_node_index) {
       if (osmium::geom::haversine::distance(nodes[right_node_index].location(),
                                             nodes[node_index].location()) >
-          distance_threshold)
+          distance_threshold) {
         break;
+      }
 
       right_node_indices.push_back(right_node_index);
     }
 
     double min_angle = std::numeric_limits<double>::infinity();
-    for (auto left_index : left_node_indices)
+    for (auto left_index : left_node_indices) {
       for (auto right_index : right_node_indices) {
         min_angle =
             std::min(min_angle, get_angle(nodes[left_index].location(),
                                           nodes[node_index].location(),
                                           nodes[right_index].location()));
       }
+    }
 
-    if (min_angle < angle_threshold)
+    if (min_angle < angle_threshold) {
       dangerous_bends.push_back(nodes[node_index]);
+    }
   }
 }
 
-double DangerousBendHandler::get_angle(const osmium::Location &node_a,
-                                       const osmium::Location &node_c,
-                                       const osmium::Location &node_b) {
-  double dist_a = osmium::geom::haversine::distance(node_c, node_b);
-  double dist_b = osmium::geom::haversine::distance(node_a, node_c);
-  double dist_c = osmium::geom::haversine::distance(node_a, node_b);
+auto DangerousBendHandler::get_angle(const osmium::Location &node_a,
+                                     const osmium::Location &node_c,
+                                     const osmium::Location &node_b) -> double {
+  const double dist_a = osmium::geom::haversine::distance(node_c, node_b);
+  const double dist_b = osmium::geom::haversine::distance(node_a, node_c);
+  const double dist_c = osmium::geom::haversine::distance(node_a, node_b);
 
   return std::acos(((dist_a * dist_a) + (dist_b * dist_b) - (dist_c * dist_c)) /
                    (2 * dist_a * dist_b));

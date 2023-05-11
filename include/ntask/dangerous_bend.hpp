@@ -1,5 +1,5 @@
-#ifndef NTASK_DANGEROUS_BEND_H
-#define NTASK_DANGEROUS_BEND_H
+#ifndef NTASK_DANGEROUS_BEND_HPP
+#define NTASK_DANGEROUS_BEND_HPP
 
 #include <cmath>
 #include <osmium/handler.hpp>
@@ -18,11 +18,12 @@ class DangerousBendHandler : public osmium::handler::Handler {
     double angle_threshold;
   };
 
-  DangerousBendHandler(const Configuration &configuration);
+  explicit DangerousBendHandler(const Configuration &configuration);
 
   void way(const osmium::Way &way);
 
-  const std::vector<osmium::NodeRef> &get_dangerous_bends() const noexcept;
+  [[nodiscard]] auto get_dangerous_bends() const noexcept
+      -> const std::vector<osmium::NodeRef> &;
 
  private:
   void add_dangerous_bend(const osmium::Way &way);
@@ -34,9 +35,9 @@ class DangerousBendHandler : public osmium::handler::Handler {
   /// corresponding to this node
   /// @param node_b Third node of triangle
   /// @return The angle corresponding to @param node_c in Radian
-  static double get_angle(const osmium::Location &node_a,
-                          const osmium::Location &node_c,
-                          const osmium::Location &node_b);
+  static auto get_angle(const osmium::Location &node_a,
+                        const osmium::Location &node_c,
+                        const osmium::Location &node_b) -> double;
 
   static constexpr double DEGREE_TO_RADIAN = (M_PI / 180.0);
 
@@ -46,6 +47,7 @@ class DangerousBendHandler : public osmium::handler::Handler {
   const double angle_threshold;
   std::vector<osmium::NodeRef> dangerous_bends;
 };
+
 }  // namespace ntask
 
 #endif
