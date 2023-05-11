@@ -21,7 +21,11 @@ int main() {
       osmium::handler::NodeLocationsForWays<IndexType>{index};
 
   ntask::DangerousBendHandler dangerous_bend_handler{
-      {"trunk", "primary", "secondary", "tertiary"}, 50, 135};
+      ntask::DangerousBendHandler::Configuration{
+          .highway_tags = {"trunk", "primary", "secondary", "tertiary"},
+          .blacklisted_tags = {{"oneway", "yes"}, {"junction", "roundabout"}},
+          .distance_threshold = 50,
+          .angle_threshold = 135}};
 
   osmium::apply(reader, location_handler, dangerous_bend_handler);
   reader.close();

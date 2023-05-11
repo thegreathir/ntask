@@ -11,8 +11,14 @@ namespace ntask {
 
 class DangerousBendHandler : public osmium::handler::Handler {
  public:
-  DangerousBendHandler(const std::vector<std::string> &way_tags,
-                       double distance_threshold, double angle_threshold);
+  struct Configuration {
+    const std::vector<std::string> &highway_tags;
+    const std::vector<std::pair<std::string, std::string>> &blacklisted_tags;
+    double distance_threshold;
+    double angle_threshold;
+  };
+
+  DangerousBendHandler(const Configuration &configuration);
 
   void way(const osmium::Way &way);
 
@@ -34,7 +40,8 @@ class DangerousBendHandler : public osmium::handler::Handler {
 
   static constexpr double DEGREE_TO_RADIAN = (M_PI / 180.0);
 
-  const std::vector<std::string> way_tags;
+  const std::vector<std::string> highway_tags;
+  const std::vector<std::pair<std::string, std::string>> blacklisted_tags;
   const double distance_threshold;
   const double angle_threshold;
   std::vector<osmium::NodeRef> dangerous_bends;

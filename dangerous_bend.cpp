@@ -4,23 +4,29 @@
 
 using ntask::DangerousBendHandler;
 
-DangerousBendHandler::DangerousBendHandler(
-    const std::vector<std::string> &way_tags, double distance_threshold,
-    double angle_threshold)
-    : way_tags(way_tags),
-      distance_threshold(distance_threshold),
-      angle_threshold(angle_threshold * DEGREE_TO_RADIAN) {}
+DangerousBendHandler::DangerousBendHandler(const Configuration &configuration)
+    : highway_tags(configuration.highway_tags),
+      blacklisted_tags(configuration.blacklisted_tags),
+      distance_threshold(configuration.distance_threshold),
+      angle_threshold(configuration.angle_threshold * DEGREE_TO_RADIAN) {}
 
 void DangerousBendHandler::way(const osmium::Way &way) {
-  if (way.tags().has_tag("oneway", "yes")) return;
-  if (way.tags().has_tag("junction", "roundabout")) return;
+  if (std::any_of(
+          blacklisted_tags.begin(), blacklisted_tags.end(),
+          [&way](const std::pair<std::string, std::string> &blacklisted_tag) {
+            return way.tags().has_tag(blacklisted_tag.first.c_str(),
+                                      blacklisted_tag.second.c_str());
+          }))
+    return;
+
   const auto *highway_value = way.tags().get_value_by_key("highway");
   if (!highway_value) return;
-  if (std::all_of(way_tags.cbegin(), way_tags.cend(),
+  if (std::all_of(highway_tags.cbegin(), highway_tags.cend(),
                   [highway_value](const std::string &way_tag) {
                     return way_tag != highway_value;
                   }))
     return;
+
   add_dangerous_bend(way);
 }
 
