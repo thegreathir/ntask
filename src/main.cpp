@@ -26,12 +26,6 @@ auto main() -> int {
     auto location_handler =
         osmium::handler::NodeLocationsForWays<IndexType>{index};
 
-    std::vector<std::string> highway_tags;
-    std::transform(
-        config["highway_tags"].cbegin(), config["highway_tags"].cend(),
-        std::back_inserter(highway_tags),
-        [](const auto& highway_tag) -> std::string { return highway_tag; });
-
     std::vector<std::pair<std::string, std::string>> blacklisted_tags;
     std::transform(
         config["blacklisted_tags"].cbegin(), config["blacklisted_tags"].cend(),
@@ -42,7 +36,7 @@ auto main() -> int {
 
     ntask::DangerousBendHandler dangerous_bend_handler{
         ntask::DangerousBendHandler::Configuration{
-            .highway_tags = highway_tags,
+            .highway_tags = config["highway_tags"],
             .blacklisted_tags = blacklisted_tags,
             .distance_threshold = config["distance_threshold"],
             .angle_threshold = config["angle_threshold"]}};

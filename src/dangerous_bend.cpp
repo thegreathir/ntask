@@ -23,7 +23,8 @@ void DangerousBendHandler::way(const osmium::Way &way) {
   if (highway_value == nullptr) {
     return;
   }
-  if (std::all_of(configuration.highway_tags.cbegin(), configuration.highway_tags.cend(),
+  if (std::all_of(configuration.highway_tags.cbegin(),
+                  configuration.highway_tags.cend(),
                   [highway_value](const std::string &highway_tag) {
                     return highway_tag != highway_value;
                   })) {
