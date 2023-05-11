@@ -10,8 +10,13 @@
 #include "json.hpp"
 
 int main() {
-  osmium::io::Reader reader{"west.osm.gz", osmium::osm_entity_bits::node |
-                                               osmium::osm_entity_bits::way};
+  constexpr const char* CONFIG_FILE_NAME = "config.json";
+  std::ifstream config_file(CONFIG_FILE_NAME);
+  const auto config = nlohmann::json::parse(config_file);
+
+  osmium::io::Reader reader{
+      static_cast<std::string>(config["input_file"]),
+      osmium::osm_entity_bits::node | osmium::osm_entity_bits::way};
 
   using IndexType =
       osmium::index::map::SparseMemArray<osmium::unsigned_object_id_type,
@@ -20,12 +25,25 @@ int main() {
   auto location_handler =
       osmium::handler::NodeLocationsForWays<IndexType>{index};
 
+  std::vector<std::string> highway_tags;
+  std::transform(
+      config["highway_tags"].cbegin(), config["highway_tags"].cend(),
+      std::back_inserter(highway_tags),
+      [](const auto& highway_tag) -> std::string { return highway_tag; });
+
+  std::vector<std::pair<std::string, std::string>> blacklisted_tags;
+  std::transform(
+      config["blacklisted_tags"].cbegin(), config["blacklisted_tags"].cend(),
+      std::back_inserter(blacklisted_tags), [](const auto& blacklisted_tag) {
+        return std::make_pair(blacklisted_tag["key"], blacklisted_tag["value"]);
+      });
+
   ntask::DangerousBendHandler dangerous_bend_handler{
       ntask::DangerousBendHandler::Configuration{
-          .highway_tags = {"trunk", "primary", "secondary", "tertiary"},
-          .blacklisted_tags = {{"oneway", "yes"}, {"junction", "roundabout"}},
-          .distance_threshold = 50,
-          .angle_threshold = 135}};
+          .highway_tags = highway_tags,
+          .blacklisted_tags = blacklisted_tags,
+          .distance_threshold = config["distance_threshold"],
+          .angle_threshold = config["angle_threshold"]}};
 
   osmium::apply(reader, location_handler, dangerous_bend_handler);
   reader.close();
@@ -38,8 +56,7 @@ int main() {
          "https://www.openstreetmap.org/node/" + std::to_string(node.ref())}});
   }
 
-  constexpr const char* RESULT_FILE_NAME = "result.json";
-  std::ofstream result_file{RESULT_FILE_NAME};
+  std::ofstream result_file{config["output_file"]};
   result_file << result.dump(2) << std::endl;
 
   return 0;

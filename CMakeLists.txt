@@ -6,3 +6,5 @@ set_property(TARGET ntask PROPERTY CXX_STANDARD 20)
 target_compile_options(ntask PRIVATE -Wall -Wextra -Werror)
 
 target_link_libraries(ntask expat z)
+
+configure_file(${CMAKE_SOURCE_DIR}/config.json ${CMAKE_BINARY_DIR} COPYONLY)
