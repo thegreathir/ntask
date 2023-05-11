@@ -6,7 +6,7 @@ using ntask::DangerousBendHandler;
 
 DangerousBendHandler::DangerousBendHandler(const Configuration &configuration)
     : configuration(configuration),
-      angle_threshold(configuration.angle_threshold * DEGREE_TO_RADIAN) {}
+      angle_threshold(osmium::geom::deg_to_rad(configuration.angle_threshold)) {}
 
 void DangerousBendHandler::way(const osmium::Way &way) {
   if (std::any_of(

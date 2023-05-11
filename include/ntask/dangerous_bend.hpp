@@ -53,8 +53,6 @@ class DangerousBendHandler : public osmium::handler::Handler {
                         const osmium::Location &node_c,
                         const osmium::Location &node_b) -> double;
 
-  static constexpr double DEGREE_TO_RADIAN = (M_PI / 180.0);
-
   const Configuration configuration;
   const double angle_threshold;
   std::vector<osmium::NodeRef> dangerous_bends;
