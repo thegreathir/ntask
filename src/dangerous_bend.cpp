@@ -5,14 +5,13 @@
 using ntask::DangerousBendHandler;
 
 DangerousBendHandler::DangerousBendHandler(const Configuration &configuration)
-    : highway_tags(configuration.highway_tags),
-      blacklisted_tags(configuration.blacklisted_tags),
-      distance_threshold(configuration.distance_threshold),
+    : configuration(configuration),
       angle_threshold(configuration.angle_threshold * DEGREE_TO_RADIAN) {}
 
 void DangerousBendHandler::way(const osmium::Way &way) {
   if (std::any_of(
-          blacklisted_tags.begin(), blacklisted_tags.end(),
+          configuration.blacklisted_tags.begin(),
+          configuration.blacklisted_tags.end(),
           [&way](const std::pair<std::string, std::string> &blacklisted_tag) {
             return way.tags().has_tag(blacklisted_tag.first.c_str(),
                                       blacklisted_tag.second.c_str());
@@ -24,7 +23,7 @@ void DangerousBendHandler::way(const osmium::Way &way) {
   if (highway_value == nullptr) {
     return;
   }
-  if (std::all_of(highway_tags.cbegin(), highway_tags.cend(),
+  if (std::all_of(configuration.highway_tags.cbegin(), configuration.highway_tags.cend(),
                   [highway_value](const std::string &highway_tag) {
                     return highway_tag != highway_value;
                   })) {
@@ -51,7 +50,7 @@ void DangerousBendHandler::add_dangerous_bend(const osmium::Way &way) {
          --left_node_index) {
       if (osmium::geom::haversine::distance(nodes[left_node_index].location(),
                                             nodes[node_index].location()) >
-          distance_threshold) {
+          configuration.distance_threshold) {
         break;
       }
 
@@ -63,7 +62,7 @@ void DangerousBendHandler::add_dangerous_bend(const osmium::Way &way) {
          ++right_node_index) {
       if (osmium::geom::haversine::distance(nodes[right_node_index].location(),
                                             nodes[node_index].location()) >
-          distance_threshold) {
+          configuration.distance_threshold) {
         break;
       }
 

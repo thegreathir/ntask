@@ -16,17 +16,18 @@ class DangerousBendHandler : public osmium::handler::Handler {
   struct Configuration {
     /// @brief Ways without any of these values assigned to the key `highway`
     /// will be filtered out.
-    const std::vector<std::string> &highway_tags;
+    std::vector<std::string> highway_tags;
 
     /// @brief Ways with these tags will be filtered out (e.g. `oneway=yes` will
     /// filter one-way roads).
-    const std::vector<std::pair<std::string, std::string>> &blacklisted_tags;
+    std::vector<std::pair<std::string, std::string>> blacklisted_tags;
 
-    /// @brief Distance threshold to search for finding two nodes around a
-    /// specific node in a way to construct a tight angle
+    /// @brief Distance threshold in meter to search for finding two nodes
+    /// around a specific node in a road to construct a tight angle
     double distance_threshold;
 
     /// @brief Angles less than this threshold will be marked as dangerous bend
+    /// @note Unit is degree
     double angle_threshold;
   };
 
@@ -54,9 +55,7 @@ class DangerousBendHandler : public osmium::handler::Handler {
 
   static constexpr double DEGREE_TO_RADIAN = (M_PI / 180.0);
 
-  const std::vector<std::string> highway_tags;
-  const std::vector<std::pair<std::string, std::string>> blacklisted_tags;
-  const double distance_threshold;
+  const Configuration configuration;
   const double angle_threshold;
   std::vector<osmium::NodeRef> dangerous_bends;
 };
