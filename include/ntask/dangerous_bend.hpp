@@ -9,12 +9,24 @@
 
 namespace ntask {
 
+/// @brief Handler to scan the ways in a given map and find dangerous bends
 class DangerousBendHandler : public osmium::handler::Handler {
  public:
+  /// @brief Configuration of @c DangerousBendHandler
   struct Configuration {
+    /// @brief Ways without any of these values assigned to the key `highway`
+    /// will be filtered out.
     const std::vector<std::string> &highway_tags;
+
+    /// @brief Ways with these tags will be filtered out (e.g. `oneway=yes` will
+    /// filter one-way roads).
     const std::vector<std::pair<std::string, std::string>> &blacklisted_tags;
+
+    /// @brief Distance threshold to search for finding two nodes around a
+    /// specific node in a way to construct a tight angle
     double distance_threshold;
+
+    /// @brief Angles less than this threshold will be marked as dangerous bend
     double angle_threshold;
   };
 
@@ -22,6 +34,7 @@ class DangerousBendHandler : public osmium::handler::Handler {
 
   void way(const osmium::Way &way);
 
+  /// @return Founded nodes related to a dangerous bend
   [[nodiscard]] auto get_dangerous_bends() const noexcept
       -> const std::vector<osmium::NodeRef> &;
 
