@@ -37,7 +37,7 @@ jobs:
 
     - name: Tidy
       run: >
-        clang-tidy --checks="-*,
+        clang-tidy --warnings-as-errors="*" --checks="-*,
         bugprone-*, cert-*, clang-analyzer-*, concurrency-*, cppcoreguidelines-*,
         google-*, hicpp-*, llvm-*, misc-*, modernize-*, performance-*,
         portability-*, readability-*"
