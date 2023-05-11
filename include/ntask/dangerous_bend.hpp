@@ -18,7 +18,7 @@ class DangerousBendHandler : public osmium::handler::Handler {
     double angle_threshold;
   };
 
-  DangerousBendHandler(const Configuration &configuration);
+explicit DangerousBendHandler(const Configuration &configuration);
 
   void way(const osmium::Way &way);
 
